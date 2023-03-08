@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
-	"github.com/avosaga/simplebank/util"
+	"github.com/avosaga/go-simplebank/util"
 	"testing"
 	"time"
 

@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"github.com/avosaga/simplebank/util"
+	"github.com/avosaga/go-simplebank/util"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"

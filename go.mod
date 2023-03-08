@@ -1,4 +1,4 @@
-module github.com/avosaga/simplebank
+module github.com/avosaga/go-simplebank
 
 go 1.20
 
