@@ -12,7 +12,7 @@ type Payload struct {
 }
 
 func (payload *Payload) Valid() bool {
-	return !time.Now().After(payload.ExpiresAt.Time)
+	return time.Now().Before(payload.ExpiresAt.Time)
 }
 
 func NewPayload(username string, duration time.Duration) (*Payload, error) {
