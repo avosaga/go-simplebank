@@ -2,8 +2,10 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	db "github.com/avosaga/go-simplebank/db/sqlc"
+	"github.com/avosaga/go-simplebank/token"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -22,11 +24,20 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		return
 	}
 
-	if !server.hasAccountValidCurrency(ctx, req.FromAccountID, req.Currency) {
+	fromAccount, valid := server.hasAccountValidCurrency(ctx, req.FromAccountID, req.Currency)
+	if !valid {
 		return
 	}
 
-	if !server.hasAccountValidCurrency(ctx, req.ToAccountID, req.Currency) {
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if fromAccount.Owner != authPayload.Username {
+		err := errors.New("account does not belong to authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	_, valid = server.hasAccountValidCurrency(ctx, req.ToAccountID, req.Currency)
+	if !valid {
 		return
 	}
 
@@ -45,7 +56,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 
-func (server *Server) hasAccountValidCurrency(ctx *gin.Context, accountID int64, currency string) bool {
+func (server *Server) hasAccountValidCurrency(ctx *gin.Context, accountID int64, currency string) (db.Account, bool) {
 	account, err := server.store.GetAccount(ctx, accountID)
 	if err != nil {
 		status := http.StatusInternalServerError
@@ -59,8 +70,8 @@ func (server *Server) hasAccountValidCurrency(ctx *gin.Context, accountID int64,
 	if account.Currency != currency {
 		err := fmt.Errorf("account [%d] currency mismatch: %s vs %s", accountID, account.Currency, currency)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return false
+		return account, false
 	}
 
-	return true
+	return account, true
 }
