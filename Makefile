@@ -7,16 +7,28 @@ createdb:
 dropdb:
 	docker exec -it postgresAlpine dropdb simple_bank
 
+build-image:
+	docker build -t go-simplebank:latest .
+
+run-container:
+	docker run --name go-simplebank --network bank-network -p 8080:8080 -e GIN_MODE=release -e DB_SOURCE="postgresql://root:secret@postgresAlpine:5432/simple_bank?sslmode=disable" go-simplebank:latest
+
+create-network:
+	docker network create bank-network
+
+network-connect:
+	docker network connect bank-network postgresAlpine
+
 migrateup:
 	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up
 
-migrateup1:
+migrateup-by-1:
 	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up 1
 
 migratedown:
 	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down
 
-migratedown1:
+migratedown-by-1:
 	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down 1
 
 sqlc:
@@ -31,4 +43,4 @@ server:
 mock:
 	mockgen -build_flags=--mod=mod -package mockdb -destination db/mock/store.go github.com/avosaga/go-simplebank/db/sqlc Store
 
-.PHONY: postgres createdb dropdb sqlc migratedown migrateup migratedown1 migrateup1 test server mock
+.PHONY: postgres createdb dropdb sqlc migratedown migrateup migratedown-by-1 migrateup-by-1 test server mock network-connect run-container build-image create-network
