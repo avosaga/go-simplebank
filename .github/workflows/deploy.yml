@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: go-simplebank
-
+      PROJECT_ID: graceful-matter-384419
     steps:
       - id: auth
         uses: google-github-actions/auth@v1
