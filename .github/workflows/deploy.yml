@@ -34,7 +34,7 @@ jobs:
         run: docker build -t $IMAGE_NAME:latest .
 
       - name: Configure Docker Client
-        run: gcloud auth configure-docker --quite
+        run: gcloud auth configure-docker --quiet
 
       - name: Push Docker Image to Container Registry (GCR)
         env:
